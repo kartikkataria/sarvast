@@ -1,21 +1,59 @@
-import { withAuth } from "next-auth/middleware";
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
-export default withAuth({
-  pages: {
-    signIn: "/auth/signin",
-  },
-});
+const protectedPaths = [
+  "/dashboard",
+  "/search",
+  "/social",
+  "/ads",
+  "/feedback",
+  "/competition",
+  "/calendar",
+  "/context-library",
+  "/connections",
+];
+
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({ request: { headers: request.headers } });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          response = NextResponse.next({ request: { headers: request.headers } });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const isProtected = protectedPaths.some((p) =>
+    request.nextUrl.pathname.startsWith(p)
+  );
+
+  if (isProtected && !user) {
+    return NextResponse.redirect(new URL("/auth/signin", request.url));
+  }
+
+  return response;
+}
 
 export const config = {
   matcher: [
-    "/dashboard/:path*",
-    "/search/:path*",
-    "/social/:path*",
-    "/ads/:path*",
-    "/feedback/:path*",
-    "/competition/:path*",
-    "/calendar/:path*",
-    "/context-library/:path*",
-    "/connections/:path*",
+    "/((?!_next/static|_next/image|favicon.ico|api/auth).*)",
   ],
 };

@@ -1,9 +1,19 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { createClient } from "@/lib/supabase/client";
 import { Zap } from "lucide-react";
 
 export default function SignInPage() {
+  const handleGoogleSignIn = async () => {
+    const supabase = createClient();
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+  };
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-8 bg-background">
       <div className="flex flex-col items-center gap-3">
@@ -14,7 +24,7 @@ export default function SignInPage() {
       <div className="w-full max-w-sm rounded-lg border border-border bg-card p-8 shadow-sm">
         <h2 className="mb-6 text-center text-lg font-semibold">Sign in to continue</h2>
         <button
-          onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+          onClick={handleGoogleSignIn}
           className="flex w-full items-center justify-center gap-3 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
