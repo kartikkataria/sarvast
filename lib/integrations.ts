@@ -43,7 +43,7 @@ export const INTEGRATIONS: Integration[] = [
     agent: "Karma",
     color: "bg-green-600",
     initials: "GAd",
-    oauthPath: null,
+    oauthPath: "/api/connections/google_ads/auth",
   },
   {
     provider: "meta_ads",
@@ -95,7 +95,7 @@ export const INTEGRATIONS: Integration[] = [
     agent: "Mitra",
     color: "bg-yellow-500",
     initials: "GBP",
-    oauthPath: null,
+    oauthPath: "/api/connections/google_business/auth",
   },
 ];
 
