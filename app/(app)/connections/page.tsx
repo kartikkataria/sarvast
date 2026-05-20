@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/shared/page-header";
 import { ConnectionsList } from "@/components/connections/connections-list";
@@ -31,7 +32,9 @@ export default async function ConnectionsPage() {
             : "Connect your marketing tools to unlock real data across all agents"
         }
       />
-      <ConnectionsList integrations={INTEGRATIONS} connectedMap={connectedMap} />
+      <Suspense>
+        <ConnectionsList integrations={INTEGRATIONS} connectedMap={connectedMap} />
+      </Suspense>
     </>
   );
 }
