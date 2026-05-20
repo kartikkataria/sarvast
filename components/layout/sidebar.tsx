@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  MessageSquare,
   Search,
   Share2,
   Megaphone,
@@ -14,6 +13,7 @@ import {
   Library,
   Plug,
   Zap,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,40 +27,48 @@ const navItems = [
   { label: "Competition", href: "/competition", icon: Swords, agent: "Para" },
   { label: "Calendar", href: "/calendar", icon: CalendarDays, agent: "Vani" },
   { label: "Context Library", href: "/context-library", icon: Library, agent: "Vyas" },
-  { label: "Connections", href: "/connections", icon: Plug },
+  { label: "Connections", href: "/connections", icon: Plug, agent: undefined },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-60 flex-col border-r border-border bg-card">
-      <div className="flex h-16 items-center gap-2 border-b border-border px-4">
-        <Zap className="h-6 w-6 text-primary" />
-        <span className="text-lg font-semibold tracking-tight">Sarvast</span>
+    <aside className="flex h-screen w-56 shrink-0 flex-col bg-[#1C1917]">
+      {/* Logo */}
+      <div className="flex h-14 items-center gap-2.5 border-b border-white/8 px-4">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-500 shadow-sm">
+          <Zap className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
+        </div>
+        <span className="text-sm font-semibold tracking-tight text-white">Sarvast</span>
       </div>
-      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
+
+      {/* Nav */}
+      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-3">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = pathname.startsWith(item.href);
+          const active = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                "group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
                 active
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                  ? "bg-white/12 text-white"
+                  : "text-white/45 hover:bg-white/6 hover:text-white/80"
               )}
             >
-              <Icon className="h-4 w-4 shrink-0" />
-              <span className="flex-1">{item.label}</span>
+              <Icon
+                className={cn("h-4 w-4 shrink-0", active ? "text-orange-400" : "")}
+                strokeWidth={active ? 2 : 1.75}
+              />
+              <span className="flex-1 font-medium">{item.label}</span>
               {item.agent && (
                 <span
                   className={cn(
-                    "text-[10px] font-normal opacity-60",
-                    active ? "text-primary-foreground" : "text-muted-foreground"
+                    "text-[10px] font-normal",
+                    active ? "text-white/40" : "text-white/20"
                   )}
                 >
                   {item.agent}
@@ -70,6 +78,11 @@ export function Sidebar() {
           );
         })}
       </nav>
+
+      {/* Footer */}
+      <div className="border-t border-white/8 px-4 py-3">
+        <p className="text-[10px] text-white/20">Sarvast · AI Marketing</p>
+      </div>
     </aside>
   );
 }

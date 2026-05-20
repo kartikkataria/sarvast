@@ -74,7 +74,11 @@ export async function listSites(accessToken: string): Promise<GSCSite[]> {
   const res = await fetch("https://www.googleapis.com/webmasters/v3/sites", {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
-  if (!res.ok) throw new Error("Failed to fetch GSC sites");
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    console.error("[GSC listSites] API error:", JSON.stringify(err));
+    throw new Error(`Failed to fetch GSC sites: ${err?.error?.message ?? res.status}`);
+  }
   const data = await res.json();
   return data.siteEntry ?? [];
 }
