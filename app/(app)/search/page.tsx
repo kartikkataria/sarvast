@@ -1,20 +1,94 @@
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { PageHeader } from "@/components/shared/page-header";
+import { SearchDashboard } from "@/components/guru/search-dashboard";
 import { EmptyState } from "@/components/shared/empty-state";
-import { Search } from "lucide-react";
+import { Search, Plug } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  listSites,
+  querySearchAnalytics,
+  getValidAccessToken,
+} from "@/agents/guru/gsc";
 
-export default function SearchPage() {
-  return (
-    <>
-      <PageHeader
-        title="Search"
-        description="SEO analysis, keyword research, and search visibility"
-        agent="Guru"
-      />
-      <EmptyState
-        icon={Search}
-        title="No search data"
-        description="Connect Google Search Console or SEMrush to start tracking your search performance."
-      />
-    </>
-  );
+export default async function SearchPage() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const admin = createAdminClient();
+  const { data: connection } = await admin
+    .from("connections")
+    .select("access_token, refresh_token, expires_at")
+    .eq("user_id", user!.id)
+    .eq("provider", "google_search_console")
+    .single();
+
+  if (!connection) {
+    return (
+      <>
+        <PageHeader title="Search" description="SEO analysis and keyword performance" agent="Guru" />
+        <EmptyState
+          icon={Plug}
+          title="Google Search Console not connected"
+          description="Connect Google Search Console to see your keyword rankings, impressions, and click-through rates."
+          action={
+            <Button asChild size="sm">
+              <Link href="/connections">Go to Connections</Link>
+            </Button>
+          }
+        />
+      </>
+    );
+  }
+
+  try {
+    const token = await getValidAccessToken({ ...connection, user_id: user!.id });
+    const sites = await listSites(token);
+
+    if (sites.length === 0) {
+      return (
+        <>
+          <PageHeader title="Search" description="SEO analysis and keyword performance" agent="Guru" />
+          <EmptyState
+            icon={Search}
+            title="No sites found in Search Console"
+            description="Add and verify your website in Google Search Console, then come back here."
+          />
+        </>
+      );
+    }
+
+    const defaultSite = sites[0].siteUrl;
+    const { rows, totals } = await querySearchAnalytics(token, defaultSite, "query", 28);
+
+    return (
+      <>
+        <PageHeader
+          title="Search"
+          description="Keyword rankings and search performance"
+          agent="Guru"
+        />
+        <SearchDashboard
+          sites={sites}
+          initialSiteUrl={defaultSite}
+          initialRows={rows}
+          initialTotals={totals}
+          days={28}
+        />
+      </>
+    );
+  } catch (err) {
+    console.error("[search page]", err);
+    return (
+      <>
+        <PageHeader title="Search" description="SEO analysis and keyword performance" agent="Guru" />
+        <EmptyState
+          icon={Search}
+          title="Failed to load search data"
+          description="There was an error fetching data from Google Search Console. Try refreshing the page."
+        />
+      </>
+    );
+  }
 }
