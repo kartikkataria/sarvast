@@ -1,0 +1,2 @@
+// Karma — Ads agent
+export {};
