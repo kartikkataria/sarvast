@@ -24,8 +24,8 @@ export function ConnectionsList({ integrations, connectedMap }: Props) {
     const connected = searchParams.get("connected");
     const error = searchParams.get("error");
     if (connected || error) {
-      // Clear query params after reading them
       router.replace("/connections");
+      router.refresh();
     }
   }, [searchParams, router]);
 
