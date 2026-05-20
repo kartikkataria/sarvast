@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
+  MessageSquare,
   Search,
   Share2,
   Megaphone,
@@ -17,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const navItems = [
+  { label: "Briefing", href: "/chat", icon: MessageSquare, agent: "Agni" },
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, agent: "Chitra" },
   { label: "Search", href: "/search", icon: Search, agent: "Guru" },
   { label: "Social", href: "/social", icon: Share2, agent: "Narad" },

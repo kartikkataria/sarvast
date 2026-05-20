@@ -1,19 +1,37 @@
+import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/shared/page-header";
-import { EmptyState } from "@/components/shared/empty-state";
-import { Plug } from "lucide-react";
+import { ConnectionsList } from "@/components/connections/connections-list";
+import { INTEGRATIONS } from "@/lib/integrations";
 
-export default function ConnectionsPage() {
+export default async function ConnectionsPage() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { data: connections } = await supabase
+    .from("connections")
+    .select("provider, provider_account_id, connected_at")
+    .eq("user_id", user!.id);
+
+  const connectedMap = Object.fromEntries(
+    (connections ?? []).map((c) => [
+      c.provider,
+      { provider_account_id: c.provider_account_id, connected_at: c.connected_at },
+    ])
+  );
+
+  const connectedCount = (connections ?? []).length;
+
   return (
     <>
       <PageHeader
         title="Connections"
-        description="Manage your integrated data sources and API connections"
+        description={
+          connectedCount > 0
+            ? `${connectedCount} of ${INTEGRATIONS.length} integrations connected`
+            : "Connect your marketing tools to unlock real data across all agents"
+        }
       />
-      <EmptyState
-        icon={Plug}
-        title="No connections yet"
-        description="Connect your marketing tools — Google, Meta, LinkedIn, and more — to unlock the full platform."
-      />
+      <ConnectionsList integrations={INTEGRATIONS} connectedMap={connectedMap} />
     </>
   );
 }
