@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -10,7 +11,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/connections?error=access_denied`);
   }
 
-  // Exchange code for tokens
   const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -28,7 +28,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/connections?error=token_exchange`);
   }
 
-  // Get account email for display
   const userRes = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
     headers: { Authorization: `Bearer ${tokens.access_token}` },
   });
@@ -38,18 +37,22 @@ export async function GET(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.redirect(`${origin}/auth/signin`);
 
-  const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
-
-  await supabase.from("connections").upsert({
+  const admin = createAdminClient();
+  const { error: upsertError } = await admin.from("connections").upsert({
     user_id: user.id,
     provider: "google_search_console",
     provider_account_id: userInfo.email,
     access_token: tokens.access_token,
     refresh_token: tokens.refresh_token ?? null,
-    expires_at: expiresAt,
+    expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
     scopes: tokens.scope?.split(" ") ?? [],
     metadata: { email: userInfo.email },
   });
+
+  if (upsertError) {
+    console.error("[GSC callback] upsert failed:", upsertError);
+    return NextResponse.redirect(`${origin}/connections?error=save_failed`);
+  }
 
   return NextResponse.redirect(`${origin}/connections?connected=google_search_console`);
 }

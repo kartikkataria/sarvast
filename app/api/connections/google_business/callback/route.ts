@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -36,7 +37,8 @@ export async function GET(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.redirect(`${origin}/auth/signin`);
 
-  await supabase.from("connections").upsert({
+  const admin = createAdminClient();
+  const { error: upsertError } = await admin.from("connections").upsert({
     user_id: user.id,
     provider: "google_business",
     provider_account_id: userInfo.email,
@@ -46,6 +48,11 @@ export async function GET(request: NextRequest) {
     scopes: tokens.scope?.split(" ") ?? [],
     metadata: { email: userInfo.email },
   });
+
+  if (upsertError) {
+    console.error("[GBP callback] upsert failed:", upsertError);
+    return NextResponse.redirect(`${origin}/connections?error=save_failed`);
+  }
 
   return NextResponse.redirect(`${origin}/connections?connected=google_business`);
 }
