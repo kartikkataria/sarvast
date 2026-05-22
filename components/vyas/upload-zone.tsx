@@ -57,7 +57,7 @@ export function UploadZone({ onUploaded }: Props) {
           <p className="text-sm font-medium">
             {uploading ? "Uploading…" : "Drop a file or click to browse"}
           </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">PDF, TXT, MD, DOCX · max 10MB</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">PDF, DOCX, XLS, images, video, and more · max 50MB</p>
         </div>
       </div>
       {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
@@ -65,7 +65,7 @@ export function UploadZone({ onUploaded }: Props) {
         ref={inputRef}
         type="file"
         className="hidden"
-        accept=".pdf,.txt,.md,.docx,.doc"
+        accept="*"
         onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); }}
       />
     </div>

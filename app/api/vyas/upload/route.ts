@@ -2,15 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 
-const ALLOWED_TYPES = [
-  "application/pdf",
-  "text/plain",
-  "text/markdown",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/msword",
-];
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
 export async function POST(request: Request) {
   const supabase = createClient();
@@ -23,11 +15,8 @@ export async function POST(request: Request) {
   const tags = ((form.get("tags") as string) ?? "").split(",").map((t) => t.trim()).filter(Boolean);
 
   if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
-  if (!ALLOWED_TYPES.includes(file.type)) {
-    return NextResponse.json({ error: "File type not supported. Use PDF, TXT, MD, or DOCX." }, { status: 400 });
-  }
   if (file.size > MAX_FILE_SIZE) {
-    return NextResponse.json({ error: "File too large. Max 10MB." }, { status: 400 });
+    return NextResponse.json({ error: "File too large. Max 50MB." }, { status: 400 });
   }
 
   const filePath = `${user.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;

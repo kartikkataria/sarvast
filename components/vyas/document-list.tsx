@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Trash2, Loader2, FileType } from "lucide-react";
+import { FileText, Trash2, Loader2, FileType, FileImage, FileVideo, FileSpreadsheet, FileArchive } from "lucide-react";
 
 type Doc = {
   id: string;
@@ -19,11 +19,15 @@ function fileSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function FileIcon({ type }: { type: string }) {
-  const color = type.includes("pdf") ? "text-red-500"
-    : type.includes("word") || type.includes("doc") ? "text-blue-500"
-    : "text-muted-foreground";
-  return <FileText className={`h-5 w-5 shrink-0 ${color}`} />;
+function FileIcon({ type, name }: { type: string; name: string }) {
+  const ext = name.split(".").pop()?.toLowerCase() ?? "";
+  if (type.startsWith("image/")) return <FileImage className="h-5 w-5 shrink-0 text-purple-500" />;
+  if (type.startsWith("video/")) return <FileVideo className="h-5 w-5 shrink-0 text-pink-500" />;
+  if (type.includes("pdf")) return <FileText className="h-5 w-5 shrink-0 text-red-500" />;
+  if (type.includes("word") || ext === "docx" || ext === "doc") return <FileText className="h-5 w-5 shrink-0 text-blue-500" />;
+  if (type.includes("sheet") || ext === "xlsx" || ext === "xls" || ext === "csv") return <FileSpreadsheet className="h-5 w-5 shrink-0 text-green-600" />;
+  if (type.includes("zip") || type.includes("archive") || ext === "zip" || ext === "rar") return <FileArchive className="h-5 w-5 shrink-0 text-yellow-600" />;
+  return <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />;
 }
 
 export function DocumentList({ docs, onDeleted }: { docs: Doc[]; onDeleted: () => void }) {
@@ -54,7 +58,7 @@ export function DocumentList({ docs, onDeleted }: { docs: Doc[]; onDeleted: () =
       <div className="divide-y divide-border">
         {docs.map((doc) => (
           <div key={doc.id} className="flex items-start gap-4 px-5 py-4">
-            <FileIcon type={doc.file_type} />
+            <FileIcon type={doc.file_type} name={doc.name} />
             <div className="flex-1 min-w-0">
               <p className="truncate text-sm font-medium" title={doc.name}>{doc.name}</p>
               {doc.description && (
