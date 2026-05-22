@@ -36,8 +36,8 @@ export function Sidebar() {
     <aside className="flex h-screen w-56 shrink-0 flex-col bg-[#1C1917]">
       {/* Logo */}
       <div className="flex h-14 items-center border-b border-white/8 px-4">
-        <span className="font-pacifico text-xl text-white leading-none tracking-tight">
-          <span className="text-[1.6rem] text-orange-500 leading-none">S</span>arvast
+        <span className="font-logo text-xl leading-none text-white tracking-tight">
+          sarvast<span className="text-orange-400">.</span>
         </span>
       </div>
 

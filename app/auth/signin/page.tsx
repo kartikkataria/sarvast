@@ -16,8 +16,8 @@ export default function SignInPage() {
       {/* Left panel */}
       <div className="hidden w-1/2 flex-col justify-between bg-[#1C1917] p-10 lg:flex">
         <div className="flex items-center">
-          <span className="font-pacifico text-2xl text-white leading-none tracking-tight">
-            <span className="text-[2rem] text-orange-500 leading-none">S</span>arvast
+          <span className="font-logo text-2xl leading-none text-white tracking-tight">
+            sarvast<span className="text-orange-400">.</span>
           </span>
         </div>
         <div>
@@ -39,8 +39,8 @@ export default function SignInPage() {
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
           <div className="mb-8 flex items-center lg:hidden">
-            <span className="font-pacifico text-xl leading-none tracking-tight">
-              <span className="text-[1.7rem] text-orange-500 leading-none">S</span>arvast
+            <span className="font-logo text-xl leading-none tracking-tight">
+              sarvast<span className="text-orange-500">.</span>
             </span>
           </div>
 

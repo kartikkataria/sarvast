@@ -17,7 +17,7 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        pacifico: ["var(--font-pacifico)", "cursive"],
+        logo: ["var(--font-nunito)", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",

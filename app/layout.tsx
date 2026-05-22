@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, Pacifico } from "next/font/google";
+import { Inter, Nunito } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
 const inter = Inter({ subsets: ["latin"] });
-const pacifico = Pacifico({ weight: "400", subsets: ["latin"], variable: "--font-pacifico" });
+const nunito = Nunito({ weight: "900", subsets: ["latin"], variable: "--font-nunito" });
 
 export const metadata: Metadata = {
   title: "Sarvast — AI Marketing Platform",
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={pacifico.variable}>
+    <html lang="en" suppressHydrationWarning className={nunito.variable}>
       <body className={inter.className}>
         <Providers>{children}</Providers>
       </body>
