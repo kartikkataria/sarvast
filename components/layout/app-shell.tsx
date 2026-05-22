@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 
-const FULL_HEIGHT_PAGES = ["/chat"];
+const FULL_HEIGHT_PAGES = ["/chat", "/dashboard"];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
