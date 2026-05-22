@@ -81,7 +81,8 @@ Agents: guru=search/SEO, karma=ads, mitra=feedback/reviews, narad=social, chitra
       messages: [{ role: "user", content: prompt }],
     });
 
-    const text = response.content[0].type === "text" ? response.content[0].text : "";
+    const raw = response.content[0].type === "text" ? response.content[0].text : "";
+    const text = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
     const actions = JSON.parse(text);
     return NextResponse.json({ actions });
   } catch (e) {
