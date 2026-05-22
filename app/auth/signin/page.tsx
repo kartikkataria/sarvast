@@ -16,9 +16,7 @@ export default function SignInPage() {
       {/* Left panel */}
       <div className="hidden w-1/2 flex-col justify-between bg-[#1C1917] p-10 lg:flex">
         <div className="flex items-center">
-          <span className="font-logo text-2xl leading-none text-white tracking-tight">
-            sarvast<span className="text-orange-400">.</span>
-          </span>
+          <img src="/logo.png" alt="Sarvast" className="h-10 w-auto" style={{ mixBlendMode: "screen" }} />
         </div>
         <div>
           <p className="text-2xl font-semibold leading-snug text-white">
@@ -39,9 +37,7 @@ export default function SignInPage() {
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
           <div className="mb-8 flex items-center lg:hidden">
-            <span className="font-logo text-xl leading-none tracking-tight">
-              sarvast<span className="text-orange-500">.</span>
-            </span>
+            <img src="/logo.png" alt="Sarvast" className="h-8 w-auto" />
           </div>
 
           <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
