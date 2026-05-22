@@ -15,11 +15,10 @@ export default function SignInPage() {
     <div className="flex min-h-screen">
       {/* Left panel */}
       <div className="hidden w-1/2 flex-col justify-between bg-[#1C1917] p-10 lg:flex">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 shadow-md">
-            <span className="text-sm font-bold text-white" style={{ fontFamily: "Georgia, serif" }}>S</span>
-          </div>
-          <span className="font-pacifico text-xl text-white">Sarvast</span>
+        <div className="flex items-center">
+          <span className="font-pacifico text-2xl text-white leading-none tracking-tight">
+            <span className="text-[2rem] text-orange-500 leading-none">S</span>arvast
+          </span>
         </div>
         <div>
           <p className="text-2xl font-semibold leading-snug text-white">
@@ -39,11 +38,10 @@ export default function SignInPage() {
       <div className="flex flex-1 flex-col items-center justify-center bg-background px-8">
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
-          <div className="mb-8 flex items-center gap-2 lg:hidden">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 shadow-md">
-              <span className="text-sm font-bold text-white" style={{ fontFamily: "Georgia, serif" }}>S</span>
-            </div>
-            <span className="font-pacifico text-lg">Sarvast</span>
+          <div className="mb-8 flex items-center lg:hidden">
+            <span className="font-pacifico text-xl leading-none tracking-tight">
+              <span className="text-[1.7rem] text-orange-500 leading-none">S</span>arvast
+            </span>
           </div>
 
           <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>

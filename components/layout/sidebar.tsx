@@ -35,11 +35,10 @@ export function Sidebar() {
   return (
     <aside className="flex h-screen w-56 shrink-0 flex-col bg-[#1C1917]">
       {/* Logo */}
-      <div className="flex h-14 items-center gap-2.5 border-b border-white/8 px-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 shadow-md">
-          <span className="text-sm font-bold text-white" style={{ fontFamily: "Georgia, serif", letterSpacing: "-0.5px" }}>S</span>
-        </div>
-        <span className="font-pacifico text-lg text-white">Sarvast</span>
+      <div className="flex h-14 items-center border-b border-white/8 px-4">
+        <span className="font-pacifico text-xl text-white leading-none tracking-tight">
+          <span className="text-[1.6rem] text-orange-500 leading-none">S</span>arvast
+        </span>
       </div>
 
       {/* Nav */}
