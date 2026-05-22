@@ -36,12 +36,18 @@ export function Sidebar() {
     <aside className="flex h-screen w-56 shrink-0 flex-col bg-[#1C1917]">
       {/* Logo */}
       <div className="flex h-14 items-center border-b border-white/8 px-4">
-        <img
-          src="/logo.png"
-          alt="Sarvast"
-          className="h-8 w-auto"
-          style={{ mixBlendMode: "screen" }}
-        />
+        <div style={{ width: 140, height: 36, overflow: "hidden" }}>
+          <img
+            src="/logo.png"
+            alt="Sarvast"
+            style={{
+              height: 220,
+              width: "auto",
+              marginTop: -82,
+              mixBlendMode: "screen",
+            }}
+          />
+        </div>
       </div>
 
       {/* Nav */}
