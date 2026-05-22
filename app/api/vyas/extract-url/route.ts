@@ -26,8 +26,11 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return new NextResponse("Unauthorized", { status: 401 });
 
-  const { url } = await request.json();
+  let { url } = await request.json();
   if (!url) return NextResponse.json({ error: "URL required" }, { status: 400 });
+
+  // Auto-prepend https:// if no protocol given
+  if (!/^https?:\/\//i.test(url)) url = `https://${url}`;
 
   let pageUrl: URL;
   try {

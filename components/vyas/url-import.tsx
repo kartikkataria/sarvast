@@ -33,11 +33,16 @@ export function UrlImport({ onImported }: Props) {
     setAssets(null);
     setSelected(new Set());
     setExtracting(true);
+
+    // Auto-add https:// if missing
+    const normalised = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    if (normalised !== url) setUrl(normalised);
+
     try {
       const res = await fetch("/api/vyas/extract-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: normalised }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error); return; }
