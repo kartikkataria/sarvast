@@ -19,7 +19,7 @@ export default function SignInPage() {
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 shadow-md">
             <span className="text-sm font-bold text-white" style={{ fontFamily: "Georgia, serif" }}>S</span>
           </div>
-          <span className="text-base font-semibold text-white">Sarvast</span>
+          <span className="font-pacifico text-xl text-white">Sarvast</span>
         </div>
         <div>
           <p className="text-2xl font-semibold leading-snug text-white">
@@ -43,7 +43,7 @@ export default function SignInPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 shadow-md">
               <span className="text-sm font-bold text-white" style={{ fontFamily: "Georgia, serif" }}>S</span>
             </div>
-            <span className="text-sm font-semibold">Sarvast</span>
+            <span className="font-pacifico text-lg">Sarvast</span>
           </div>
 
           <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>

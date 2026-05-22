@@ -39,7 +39,7 @@ export function Sidebar() {
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 shadow-md">
           <span className="text-sm font-bold text-white" style={{ fontFamily: "Georgia, serif", letterSpacing: "-0.5px" }}>S</span>
         </div>
-        <span className="text-sm font-semibold tracking-tight text-white">Sarvast</span>
+        <span className="font-pacifico text-lg text-white">Sarvast</span>
       </div>
 
       {/* Nav */}
