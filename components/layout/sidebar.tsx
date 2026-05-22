@@ -12,7 +12,6 @@ import {
   CalendarDays,
   Library,
   Plug,
-  Zap,
   MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -37,8 +36,8 @@ export function Sidebar() {
     <aside className="flex h-screen w-56 shrink-0 flex-col bg-[#1C1917]">
       {/* Logo */}
       <div className="flex h-14 items-center gap-2.5 border-b border-white/8 px-4">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-500 shadow-sm">
-          <Zap className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 shadow-md">
+          <span className="text-sm font-bold text-white" style={{ fontFamily: "Georgia, serif", letterSpacing: "-0.5px" }}>S</span>
         </div>
         <span className="text-sm font-semibold tracking-tight text-white">Sarvast</span>
       </div>

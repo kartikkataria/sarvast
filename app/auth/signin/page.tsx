@@ -1,7 +1,6 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { Zap } from "lucide-react";
 
 export default function SignInPage() {
   const handleGoogleSignIn = async () => {
@@ -17,8 +16,8 @@ export default function SignInPage() {
       {/* Left panel */}
       <div className="hidden w-1/2 flex-col justify-between bg-[#1C1917] p-10 lg:flex">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-orange-500">
-            <Zap className="h-4 w-4 text-white" strokeWidth={2.5} />
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 shadow-md">
+            <span className="text-sm font-bold text-white" style={{ fontFamily: "Georgia, serif" }}>S</span>
           </div>
           <span className="text-base font-semibold text-white">Sarvast</span>
         </div>
@@ -41,8 +40,8 @@ export default function SignInPage() {
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
           <div className="mb-8 flex items-center gap-2 lg:hidden">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-500">
-              <Zap className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 shadow-md">
+              <span className="text-sm font-bold text-white" style={{ fontFamily: "Georgia, serif" }}>S</span>
             </div>
             <span className="text-sm font-semibold">Sarvast</span>
           </div>
