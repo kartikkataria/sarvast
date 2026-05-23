@@ -12,42 +12,46 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-background">
       {/* Left panel */}
-      <div className="hidden w-1/2 flex-col justify-between bg-[#1C1917] p-10 lg:flex">
-        <div className="flex items-center">
-          <img src="/logo.png" alt="Sarvast" className="h-10 w-auto" style={{ mixBlendMode: "screen" }} />
-        </div>
+      <div
+        className="hidden w-[45%] flex-col justify-between p-12 lg:flex"
+        style={{ backgroundColor: "hsl(var(--sidebar))", borderRight: "1px solid hsl(var(--sidebar-border))" }}
+      >
         <div>
-          <p className="text-2xl font-semibold leading-snug text-white">
-            "Strategy is not a plan.<br />
-            It's a living thing."
-          </p>
-          <p className="mt-3 text-sm text-white/40">AI-powered marketing intelligence</p>
+          <span className="font-logo text-2xl leading-none tracking-tight text-foreground">
+            sarvast<span className="text-primary">.</span>
+          </span>
         </div>
-        <div className="flex items-center gap-6">
-          {["Agni", "Guru", "Narad", "Karma", "Chitra"].map((name) => (
-            <span key={name} className="text-xs text-white/25">{name}</span>
+        <div className="space-y-4">
+          <p className="text-3xl font-semibold leading-snug text-foreground">
+            "Strategy is not a plan.<br />It's a living thing."
+          </p>
+          <p className="text-sm text-muted-foreground">AI-powered marketing intelligence for teams that move fast.</p>
+        </div>
+        <div className="flex items-center gap-5">
+          {["Agni", "Guru", "Narad", "Karma", "Chitra", "Vyas"].map((name) => (
+            <span key={name} className="text-xs text-muted-foreground/60">{name}</span>
           ))}
         </div>
       </div>
 
       {/* Right panel */}
-      <div className="flex flex-1 flex-col items-center justify-center bg-background px-8">
+      <div className="flex flex-1 flex-col items-center justify-center px-8">
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
-          <div className="mb-8 flex items-center lg:hidden">
-            <img src="/logo.png" alt="Sarvast" className="h-8 w-auto" />
+          <div className="mb-10 lg:hidden">
+            <span className="font-logo text-2xl leading-none tracking-tight text-foreground">
+              sarvast<span className="text-primary">.</span>
+            </span>
           </div>
 
-          <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
-          <p className="mt-1.5 text-sm text-muted-foreground">
-            Sign in to your marketing workspace
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Welcome back</h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">Sign in to your marketing workspace</p>
 
           <button
             onClick={handleGoogleSignIn}
-            className="mt-8 flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium shadow-sm transition-all hover:border-orange-200 hover:bg-orange-50 hover:shadow-md"
+            className="mt-8 flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-white px-4 py-3 text-sm font-medium text-foreground shadow-sm transition-all hover:shadow-md"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -60,9 +64,8 @@ export default function SignInPage() {
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
             By signing in you agree to our{" "}
-            <span className="underline underline-offset-2 cursor-pointer hover:text-foreground">Terms</span>
-            {" "}and{" "}
-            <span className="underline underline-offset-2 cursor-pointer hover:text-foreground">Privacy Policy</span>
+            <span className="cursor-pointer underline underline-offset-2 hover:text-foreground">Terms</span>{" "}and{" "}
+            <span className="cursor-pointer underline underline-offset-2 hover:text-foreground">Privacy Policy</span>
           </p>
         </div>
       </div>

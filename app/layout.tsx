@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Inter, Nunito } from "next/font/google";
+import { DM_Sans, Nunito } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const inter = Inter({ subsets: ["latin"] });
+const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans" });
 const nunito = Nunito({ weight: "900", subsets: ["latin"], variable: "--font-nunito" });
 
 export const metadata: Metadata = {
@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={nunito.variable}>
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning className={`${dmSans.variable} ${nunito.variable}`}>
+      <body className="font-sans">
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -26,28 +26,22 @@ const navItems = [
   { label: "Competition", href: "/competition", icon: Swords, agent: "Para" },
   { label: "Calendar", href: "/calendar", icon: CalendarDays, agent: "Vani" },
   { label: "Context Library", href: "/context-library", icon: Library, agent: "Vyas" },
-  { label: "Connections", href: "/connections", icon: Plug, agent: undefined },
+  { label: "Connections", href: "/connections", icon: Plug },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-56 shrink-0 flex-col bg-[#1C1917]">
+    <aside
+      className="flex h-screen w-56 shrink-0 flex-col border-r"
+      style={{ backgroundColor: "hsl(var(--sidebar))", borderColor: "hsl(var(--sidebar-border))" }}
+    >
       {/* Logo */}
-      <div className="flex h-14 items-center border-b border-white/8 px-4">
-        <div style={{ width: 140, height: 36, overflow: "hidden" }}>
-          <img
-            src="/logo.png"
-            alt="Sarvast"
-            style={{
-              height: 220,
-              width: "auto",
-              marginTop: -82,
-              mixBlendMode: "screen",
-            }}
-          />
-        </div>
+      <div className="flex h-14 items-center border-b px-5" style={{ borderColor: "hsl(var(--sidebar-border))" }}>
+        <span className="font-logo text-xl leading-none tracking-tight text-foreground">
+          sarvast<span className="text-primary">.</span>
+        </span>
       </div>
 
       {/* Nav */}
@@ -62,22 +56,17 @@ export function Sidebar() {
               className={cn(
                 "group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
                 active
-                  ? "bg-white/12 text-white"
-                  : "text-white/45 hover:bg-white/6 hover:text-white/80"
+                  ? "bg-white text-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-white/60 hover:text-foreground"
               )}
             >
               <Icon
-                className={cn("h-4 w-4 shrink-0", active ? "text-orange-400" : "")}
-                strokeWidth={active ? 2 : 1.75}
+                className={cn("h-4 w-4 shrink-0 transition-colors", active ? "text-primary" : "text-muted-foreground group-hover:text-foreground")}
+                strokeWidth={active ? 2.25 : 1.75}
               />
               <span className="flex-1 font-medium">{item.label}</span>
               {item.agent && (
-                <span
-                  className={cn(
-                    "text-[10px] font-normal",
-                    active ? "text-white/40" : "text-white/20"
-                  )}
-                >
+                <span className={cn("text-[10px]", active ? "text-muted-foreground" : "text-muted-foreground/50")}>
                   {item.agent}
                 </span>
               )}
@@ -87,8 +76,8 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-white/8 px-4 py-3">
-        <p className="text-[10px] text-white/20">Sarvast · AI Marketing</p>
+      <div className="border-t px-5 py-3" style={{ borderColor: "hsl(var(--sidebar-border))" }}>
+        <p className="text-[10px] text-muted-foreground/50">Sarvast · AI Marketing</p>
       </div>
     </aside>
   );

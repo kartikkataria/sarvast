@@ -17,6 +17,7 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
+        sans: ["var(--font-dm-sans)", "system-ui", "sans-serif"],
         logo: ["var(--font-nunito)", "sans-serif"],
       },
       colors: {
