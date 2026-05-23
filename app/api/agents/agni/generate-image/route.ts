@@ -19,7 +19,6 @@ export async function POST(request: Request) {
       n: 1,
       size: "1024x1024",
       quality: "standard",
-      response_format: "url",
     });
 
     const image = response.data?.[0];
