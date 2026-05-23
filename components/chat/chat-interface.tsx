@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ArrowUp, Loader2 } from "lucide-react";
+import { ArrowUp, Loader2, ImageIcon } from "lucide-react";
 import { MessageBubble } from "./message-bubble";
 import { cn } from "@/lib/utils";
 
@@ -9,21 +9,44 @@ type Message = { role: "user" | "assistant"; content: string };
 
 const STARTERS = [
   "Help me plan a product launch campaign",
-  "Grow our organic search traffic",
+  "Create a social media banner for my brand",
   "Build a lead gen brief for our SaaS",
-  "Retarget website visitors with paid ads",
+  "Design an ad visual for a product launch",
 ];
+
+const IMAGE_MARKER = /\[\[GENERATE_IMAGE:\s*([\s\S]+?)\]\]/;
 
 export function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+  const [generatedImages, setGeneratedImages] = useState<Record<number, string>>({});
+  const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, generatedImages, loadingImageIndex]);
+
+  const generateImage = async (prompt: string, messageIndex: number) => {
+    setLoadingImageIndex(messageIndex);
+    try {
+      const res = await fetch("/api/agents/agni/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        setGeneratedImages((prev) => ({ ...prev, [messageIndex]: data.url }));
+      }
+    } catch {
+      // silent — user can ask again
+    } finally {
+      setLoadingImageIndex(null);
+    }
+  };
 
   const sendMessage = async (content: string) => {
     if (!content.trim() || isStreaming) return;
@@ -35,6 +58,7 @@ export function ChatInterface() {
     setIsStreaming(true);
     const assistantMessage: Message = { role: "assistant", content: "" };
     setMessages([...updatedMessages, assistantMessage]);
+    const assistantIndex = updatedMessages.length; // index in final messages array
 
     try {
       const response = await fetch("/api/agents/agni", {
@@ -45,15 +69,24 @@ export function ChatInterface() {
       if (!response.ok) throw new Error("Failed");
       const reader = response.body!.getReader();
       const decoder = new TextDecoder();
+      let fullContent = "";
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         const chunk = decoder.decode(value, { stream: true });
+        fullContent += chunk;
         setMessages((prev) => {
           const updated = [...prev];
-          updated[updated.length - 1] = { ...updated[updated.length - 1], content: updated[updated.length - 1].content + chunk };
+          updated[updated.length - 1] = { ...updated[updated.length - 1], content: fullContent };
           return updated;
         });
+      }
+
+      // Check for image generation marker after streaming completes
+      const match = fullContent.match(IMAGE_MARKER);
+      if (match) {
+        await generateImage(match[1].trim(), assistantIndex);
       }
     } catch {
       setMessages((prev) => {
@@ -78,14 +111,13 @@ export function ChatInterface() {
 
   return (
     <div className="flex h-full flex-col bg-background">
-      {/* Messages */}
       {messages.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center px-6 pb-8">
           <div className="mb-8 text-center">
             <div className="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">A</div>
             <h2 className="text-lg font-semibold text-foreground">Hi, I'm Agni</h2>
             <p className="mt-1.5 text-sm text-muted-foreground max-w-xs">
-              Tell me your marketing goal and I'll ask the right questions to build a precise brief.
+              I can build campaign briefs and generate marketing visuals. What would you like to create?
             </p>
           </div>
           <div className="grid w-full max-w-lg grid-cols-2 gap-2">
@@ -95,7 +127,12 @@ export function ChatInterface() {
                 onClick={() => sendMessage(s)}
                 className="rounded-xl border border-border bg-white px-4 py-3 text-left text-sm text-muted-foreground shadow-sm transition-all hover:border-primary/30 hover:text-foreground hover:shadow-md"
               >
-                {s}
+                {s.includes("Create") || s.includes("Design") ? (
+                  <span className="flex items-center gap-2">
+                    <ImageIcon className="h-3.5 w-3.5 shrink-0 text-primary" />
+                    {s}
+                  </span>
+                ) : s}
               </button>
             ))}
           </div>
@@ -109,6 +146,8 @@ export function ChatInterface() {
                 message={msg}
                 isLast={i === messages.length - 1}
                 onOptionSelect={!isStreaming ? sendMessage : undefined}
+                generatedImage={generatedImages[i]}
+                imageLoading={loadingImageIndex === i}
               />
             ))}
             {isStreaming && messages[messages.length - 1]?.content === "" && (
@@ -122,7 +161,6 @@ export function ChatInterface() {
         </div>
       )}
 
-      {/* Input */}
       <div className="border-t border-border bg-background px-4 py-4">
         <div className="mx-auto max-w-2xl">
           <div className="flex items-end gap-2 rounded-2xl border border-border bg-white px-4 py-3 shadow-sm transition-shadow focus-within:shadow-md">
@@ -132,7 +170,7 @@ export function ChatInterface() {
               value={input}
               onChange={handleInput}
               onKeyDown={handleKeyDown}
-              placeholder="What's your marketing goal?"
+              placeholder="Ask Agni to build a brief or create a visual…"
               disabled={isStreaming}
               className="flex-1 resize-none bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/60 disabled:opacity-50"
               style={{ maxHeight: "160px" }}
