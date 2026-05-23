@@ -103,7 +103,14 @@ export function ChatInterface() {
       ) : (
         <div className="flex-1 overflow-y-auto px-4 py-6">
           <div className="mx-auto max-w-2xl space-y-6">
-            {messages.map((msg, i) => <MessageBubble key={i} message={msg} />)}
+            {messages.map((msg, i) => (
+              <MessageBubble
+                key={i}
+                message={msg}
+                isLast={i === messages.length - 1}
+                onOptionSelect={!isStreaming ? sendMessage : undefined}
+              />
+            ))}
             {isStreaming && messages[messages.length - 1]?.content === "" && (
               <div className="flex gap-3">
                 <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">A</div>

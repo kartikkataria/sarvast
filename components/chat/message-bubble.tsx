@@ -2,21 +2,35 @@ import { cn } from "@/lib/utils";
 
 type Message = { role: "user" | "assistant"; content: string };
 
-function renderMarkdown(text: string) {
-  return text.split("\n").map((line, i) => {
-    if (line.startsWith("### ")) return <h3 key={i} className="mt-4 mb-1 font-semibold text-sm">{line.slice(4)}</h3>;
-    if (line.startsWith("## ")) return <h2 key={i} className="mt-5 mb-1 font-semibold">{line.slice(3)}</h2>;
-    if (line.startsWith("**") && line.endsWith("**")) return <p key={i} className="font-semibold">{line.slice(2, -2)}</p>;
-    if (line.startsWith("- ") || line.startsWith("• ")) return <li key={i} className="ml-4 list-disc text-sm">{renderInline(line.slice(2))}</li>;
-    if (line.match(/^[A-D]\)/)) return (
-      <div key={i} className="flex gap-2 py-0.5">
-        <span className="shrink-0 font-semibold text-primary text-sm">{line[0]})</span>
-        <span className="text-sm">{renderInline(line.slice(2))}</span>
-      </div>
-    );
-    if (line === "") return <div key={i} className="h-2" />;
-    return <p key={i} className="text-sm leading-relaxed">{renderInline(line)}</p>;
-  });
+type Segment =
+  | { type: "text"; lines: string[] }
+  | { type: "options"; options: { key: string; label: string }[] };
+
+function parseSegments(text: string): Segment[] {
+  const lines = text.split("\n");
+  const segments: Segment[] = [];
+  let textLines: string[] = [];
+  let optionLines: { key: string; label: string }[] = [];
+
+  for (const line of lines) {
+    const optMatch = line.match(/^([A-E])\)\s+(.+)/);
+    if (optMatch) {
+      if (textLines.length) {
+        segments.push({ type: "text", lines: textLines });
+        textLines = [];
+      }
+      optionLines.push({ key: optMatch[1], label: optMatch[2] });
+    } else {
+      if (optionLines.length) {
+        segments.push({ type: "options", options: optionLines });
+        optionLines = [];
+      }
+      textLines.push(line);
+    }
+  }
+  if (textLines.length) segments.push({ type: "text", lines: textLines });
+  if (optionLines.length) segments.push({ type: "options", options: optionLines });
+  return segments;
 }
 
 function renderInline(text: string) {
@@ -27,10 +41,24 @@ function renderInline(text: string) {
   );
 }
 
-export function MessageBubble({ message }: { message: Message }) {
-  const isUser = message.role === "user";
+function renderTextLine(line: string, i: number) {
+  if (line.startsWith("### ")) return <h3 key={i} className="mt-4 mb-1 font-semibold text-sm">{line.slice(4)}</h3>;
+  if (line.startsWith("## ")) return <h2 key={i} className="mt-5 mb-1 font-semibold">{line.slice(3)}</h2>;
+  if (line.startsWith("- ") || line.startsWith("• ")) return <li key={i} className="ml-4 list-disc text-sm leading-relaxed">{renderInline(line.slice(2))}</li>;
+  if (line === "") return <div key={i} className="h-2" />;
+  return <p key={i} className="text-sm leading-relaxed">{renderInline(line)}</p>;
+}
 
-  if (isUser) {
+export function MessageBubble({
+  message,
+  isLast,
+  onOptionSelect,
+}: {
+  message: Message;
+  isLast?: boolean;
+  onOptionSelect?: (value: string) => void;
+}) {
+  if (message.role === "user") {
     return (
       <div className="flex justify-end">
         <div className="max-w-[70%] rounded-2xl rounded-tr-sm bg-primary/10 px-4 py-3 text-sm text-foreground">
@@ -40,13 +68,45 @@ export function MessageBubble({ message }: { message: Message }) {
     );
   }
 
+  const segments = parseSegments(message.content);
+
   return (
     <div className="flex gap-3">
       <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
         A
       </div>
-      <div className={cn("flex-1 space-y-0.5 pt-0.5 text-foreground")}>
-        {renderMarkdown(message.content)}
+      <div className="flex-1 space-y-3 pt-0.5">
+        {segments.map((seg, si) => {
+          if (seg.type === "text") {
+            return (
+              <div key={si} className="space-y-0.5">
+                {seg.lines.map((line, li) => renderTextLine(line, li))}
+              </div>
+            );
+          }
+          return (
+            <div key={si} className="flex flex-wrap gap-2 pt-1">
+              {seg.options.map((opt) => (
+                <button
+                  key={opt.key}
+                  onClick={() => onOptionSelect?.(`${opt.key}) ${opt.label}`)}
+                  disabled={!isLast || !onOptionSelect}
+                  className={cn(
+                    "flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm transition-all",
+                    isLast && onOptionSelect
+                      ? "border-border bg-white text-foreground shadow-sm hover:border-primary/40 hover:bg-primary/5 hover:text-primary hover:shadow-md cursor-pointer"
+                      : "border-border bg-white/50 text-muted-foreground cursor-default"
+                  )}
+                >
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-semibold text-muted-foreground">
+                    {opt.key}
+                  </span>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
