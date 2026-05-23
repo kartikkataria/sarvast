@@ -14,18 +14,25 @@ export async function POST(request: Request) {
 
   try {
     const response = await openai.images.generate({
-      model: "dall-e-3",
+      model: "gpt-image-1",
       prompt,
       n: 1,
       size: "1024x1024",
-      quality: "standard",
     });
 
     const image = response.data?.[0];
-    const url = image?.url;
-    if (!url) throw new Error("No image URL returned");
 
-    return NextResponse.json({ url, revisedPrompt: image?.revised_prompt });
+    // gpt-image-1 returns base64
+    if (image?.b64_json) {
+      return NextResponse.json({ url: `data:image/png;base64,${image.b64_json}` });
+    }
+
+    // dall-e-* returns a URL
+    if (image?.url) {
+      return NextResponse.json({ url: image.url });
+    }
+
+    throw new Error("No image returned from API");
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Image generation failed";
     console.error("[generate-image]", message);
