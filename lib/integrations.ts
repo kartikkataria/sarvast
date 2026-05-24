@@ -64,7 +64,7 @@ export const INTEGRATIONS: Integration[] = [
     agent: "Narad",
     color: "bg-pink-600",
     initials: "IG",
-    oauthPath: null,
+    oauthPath: "/api/connections/instagram/auth",
   },
   {
     provider: "linkedin",

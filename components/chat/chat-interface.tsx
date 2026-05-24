@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ArrowUp, Loader2, ImageIcon, Trash2 } from "lucide-react";
 import { MessageBubble } from "./message-bubble";
+import { PostCreator } from "./post-creator";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -16,14 +17,16 @@ const STARTERS = [
 ];
 
 const IMAGE_MARKER = /\[\[GENERATE_IMAGE:\s*([\s\S]+?)\]\]/;
+const POST_MARKER = /\[\[CREATE_POST:\s*([\s\S]+?)\]\]/;
 const STORAGE_KEY = "agni-chat";
 
 export function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [generatedImages, setGeneratedImages] = useState<Record<number, string>>({});
+  const [generatedImages, setGeneratedImages] = useState<Record<number, { url: string; publicUrl?: string }>>({});
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
+  const [postCaptions, setPostCaptions] = useState<Record<number, string>>({});
   const [userId, setUserId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -71,7 +74,7 @@ export function ChatInterface() {
         body: JSON.stringify({ prompt }),
       });
       const data = await res.json();
-      if (data.url) setGeneratedImages((prev) => ({ ...prev, [messageIndex]: data.url }));
+      if (data.url) setGeneratedImages((prev) => ({ ...prev, [messageIndex]: { url: data.url, publicUrl: data.publicUrl } }));
     } catch { /* silent */ }
     finally { setLoadingImageIndex(null); }
   };
@@ -110,8 +113,11 @@ export function ChatInterface() {
         });
       }
 
-      const match = fullContent.match(IMAGE_MARKER);
-      if (match) await generateImage(match[1].trim(), assistantIndex);
+      const imageMatch = fullContent.match(IMAGE_MARKER);
+      if (imageMatch) await generateImage(imageMatch[1].trim(), assistantIndex);
+
+      const postMatch = fullContent.match(POST_MARKER);
+      if (postMatch) setPostCaptions((prev) => ({ ...prev, [assistantIndex]: postMatch[1].trim() }));
     } catch {
       setMessages((prev) => {
         const updated = [...prev];
@@ -159,12 +165,23 @@ export function ChatInterface() {
         <div className="flex-1 overflow-y-auto px-4 py-6">
           <div className="mx-auto max-w-2xl space-y-6">
             {messages.map((msg, i) => (
-              <MessageBubble key={i} message={msg}
-                isLast={i === messages.length - 1}
-                onOptionSelect={!isStreaming ? sendMessage : undefined}
-                generatedImage={generatedImages[i]}
-                imageLoading={loadingImageIndex === i}
-              />
+              <div key={i}>
+                <MessageBubble message={msg}
+                  isLast={i === messages.length - 1}
+                  onOptionSelect={!isStreaming ? sendMessage : undefined}
+                  generatedImage={generatedImages[i]?.url}
+                  imageLoading={loadingImageIndex === i}
+                />
+                {postCaptions[i] && (
+                  <div className="mt-3 ml-9">
+                    <PostCreator
+                      caption={postCaptions[i]}
+                      mediaUrl={generatedImages[i]?.url}
+                      publicMediaUrl={generatedImages[i]?.publicUrl}
+                    />
+                  </div>
+                )}
+              </div>
             ))}
             {isStreaming && messages[messages.length - 1]?.content === "" && (
               <div className="flex gap-3">

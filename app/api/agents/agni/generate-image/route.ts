@@ -22,7 +22,10 @@ export async function POST(request: Request) {
     const base64 = Buffer.from(buffer).toString("base64");
     const contentType = res.headers.get("content-type") ?? "image/jpeg";
 
-    return NextResponse.json({ url: `data:${contentType};base64,${base64}` });
+    return NextResponse.json({
+      url: `data:${contentType};base64,${base64}`,
+      publicUrl: url, // original Pollinations URL for Instagram posting
+    });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Image generation failed";
     console.error("[generate-image]", message);
