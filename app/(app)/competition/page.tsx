@@ -1,20 +1,27 @@
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { PageHeader } from "@/components/shared/page-header";
-import { EmptyState } from "@/components/shared/empty-state";
-import { Swords } from "lucide-react";
+import { CompetitionDashboard } from "@/components/para/competition-dashboard";
 
-export default function CompetitionPage() {
+export default async function CompetitionPage() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const admin = createAdminClient();
+  const { data: competitors } = await admin
+    .from("competitors")
+    .select("*")
+    .eq("user_id", user!.id)
+    .order("created_at", { ascending: false });
+
   return (
     <>
       <PageHeader
         title="Competition"
-        description="Monitor competitors and track market positioning"
+        description="Track and analyse your competitors"
         agent="Para"
       />
-      <EmptyState
-        icon={Swords}
-        title="No competitors tracked"
-        description="Add competitor domains to start tracking their SEO, ads, and social activity."
-      />
+      <CompetitionDashboard initialCompetitors={competitors ?? []} />
     </>
   );
 }
