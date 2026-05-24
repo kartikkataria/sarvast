@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { ArrowUp, Loader2, ImageIcon } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { ArrowUp, Loader2, ImageIcon, Trash2 } from "lucide-react";
 import { MessageBubble } from "./message-bubble";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 type Message = { role: "user" | "assistant"; content: string };
@@ -11,10 +12,11 @@ const STARTERS = [
   "Help me plan a product launch campaign",
   "Create a social media banner for my brand",
   "Build a lead gen brief for our SaaS",
-  "Design an ad visual for a product launch",
+  "Design an ad creative for a product launch",
 ];
 
 const IMAGE_MARKER = /\[\[GENERATE_IMAGE:\s*([\s\S]+?)\]\]/;
+const STORAGE_KEY = "agni-chat";
 
 export function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -22,12 +24,43 @@ export function ChatInterface() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<Record<number, string>>({});
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Get user ID and restore session
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data }) => {
+      const uid = data.user?.id ?? "guest";
+      setUserId(uid);
+      try {
+        const saved = localStorage.getItem(`${STORAGE_KEY}-${uid}`);
+        if (saved) {
+          const { messages: msgs, images } = JSON.parse(saved);
+          if (msgs?.length) setMessages(msgs);
+          if (images) setGeneratedImages(images);
+        }
+      } catch { /* ignore parse errors */ }
+    });
+  }, []);
+
+  // Persist session on every change
+  useEffect(() => {
+    if (!userId || messages.length === 0) return;
+    try {
+      localStorage.setItem(`${STORAGE_KEY}-${userId}`, JSON.stringify({ messages, images: generatedImages }));
+    } catch { /* quota exceeded */ }
+  }, [messages, generatedImages, userId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, generatedImages, loadingImageIndex]);
+
+  const clearChat = useCallback(() => {
+    setMessages([]);
+    setGeneratedImages({});
+    if (userId) localStorage.removeItem(`${STORAGE_KEY}-${userId}`);
+  }, [userId]);
 
   const generateImage = async (prompt: string, messageIndex: number) => {
     setLoadingImageIndex(messageIndex);
@@ -38,14 +71,9 @@ export function ChatInterface() {
         body: JSON.stringify({ prompt }),
       });
       const data = await res.json();
-      if (data.url) {
-        setGeneratedImages((prev) => ({ ...prev, [messageIndex]: data.url }));
-      }
-    } catch {
-      // silent — user can ask again
-    } finally {
-      setLoadingImageIndex(null);
-    }
+      if (data.url) setGeneratedImages((prev) => ({ ...prev, [messageIndex]: data.url }));
+    } catch { /* silent */ }
+    finally { setLoadingImageIndex(null); }
   };
 
   const sendMessage = async (content: string) => {
@@ -58,7 +86,7 @@ export function ChatInterface() {
     setIsStreaming(true);
     const assistantMessage: Message = { role: "assistant", content: "" };
     setMessages([...updatedMessages, assistantMessage]);
-    const assistantIndex = updatedMessages.length; // index in final messages array
+    const assistantIndex = updatedMessages.length;
 
     try {
       const response = await fetch("/api/agents/agni", {
@@ -74,8 +102,7 @@ export function ChatInterface() {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        fullContent += chunk;
+        fullContent += decoder.decode(value, { stream: true });
         setMessages((prev) => {
           const updated = [...prev];
           updated[updated.length - 1] = { ...updated[updated.length - 1], content: fullContent };
@@ -83,11 +110,8 @@ export function ChatInterface() {
         });
       }
 
-      // Check for image generation marker after streaming completes
       const match = fullContent.match(IMAGE_MARKER);
-      if (match) {
-        await generateImage(match[1].trim(), assistantIndex);
-      }
+      if (match) await generateImage(match[1].trim(), assistantIndex);
     } catch {
       setMessages((prev) => {
         const updated = [...prev];
@@ -122,16 +146,10 @@ export function ChatInterface() {
           </div>
           <div className="grid w-full max-w-lg grid-cols-2 gap-2">
             {STARTERS.map((s) => (
-              <button
-                key={s}
-                onClick={() => sendMessage(s)}
-                className="rounded-xl border border-border bg-white px-4 py-3 text-left text-sm text-muted-foreground shadow-sm transition-all hover:border-primary/30 hover:text-foreground hover:shadow-md"
-              >
-                {s.includes("Create") || s.includes("Design") ? (
-                  <span className="flex items-center gap-2">
-                    <ImageIcon className="h-3.5 w-3.5 shrink-0 text-primary" />
-                    {s}
-                  </span>
+              <button key={s} onClick={() => sendMessage(s)}
+                className="rounded-xl border border-border bg-white px-4 py-3 text-left text-sm text-muted-foreground shadow-sm transition-all hover:border-primary/30 hover:text-foreground hover:shadow-md">
+                {(s.startsWith("Create") || s.startsWith("Design")) ? (
+                  <span className="flex items-center gap-2"><ImageIcon className="h-3.5 w-3.5 shrink-0 text-primary" />{s}</span>
                 ) : s}
               </button>
             ))}
@@ -141,9 +159,7 @@ export function ChatInterface() {
         <div className="flex-1 overflow-y-auto px-4 py-6">
           <div className="mx-auto max-w-2xl space-y-6">
             {messages.map((msg, i) => (
-              <MessageBubble
-                key={i}
-                message={msg}
+              <MessageBubble key={i} message={msg}
                 isLast={i === messages.length - 1}
                 onOptionSelect={!isStreaming ? sendMessage : undefined}
                 generatedImage={generatedImages[i]}
@@ -164,27 +180,19 @@ export function ChatInterface() {
       <div className="border-t border-border bg-background px-4 py-4">
         <div className="mx-auto max-w-2xl">
           <div className="flex items-end gap-2 rounded-2xl border border-border bg-white px-4 py-3 shadow-sm transition-shadow focus-within:shadow-md">
-            <textarea
-              ref={textareaRef}
-              rows={1}
-              value={input}
-              onChange={handleInput}
-              onKeyDown={handleKeyDown}
+            <textarea ref={textareaRef} rows={1} value={input} onChange={handleInput} onKeyDown={handleKeyDown}
               placeholder="Ask Agni to build a brief or create a visual…"
               disabled={isStreaming}
               className="flex-1 resize-none bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/60 disabled:opacity-50"
-              style={{ maxHeight: "160px" }}
-            />
-            <button
-              onClick={() => sendMessage(input)}
-              disabled={!input.trim() || isStreaming}
-              className={cn(
-                "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors",
-                input.trim() && !isStreaming
-                  ? "bg-primary text-white hover:bg-primary/90"
-                  : "bg-muted text-muted-foreground"
-              )}
-            >
+              style={{ maxHeight: "160px" }} />
+            {messages.length > 0 && !isStreaming && (
+              <button onClick={clearChat} className="shrink-0 text-muted-foreground/40 transition-colors hover:text-muted-foreground" title="Clear chat">
+                <Trash2 className="h-4 w-4" />
+              </button>
+            )}
+            <button onClick={() => sendMessage(input)} disabled={!input.trim() || isStreaming}
+              className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors",
+                input.trim() && !isStreaming ? "bg-primary text-white hover:bg-primary/90" : "bg-muted text-muted-foreground")}>
               {isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" strokeWidth={2.5} />}
             </button>
           </div>
