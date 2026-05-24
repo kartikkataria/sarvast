@@ -35,6 +35,8 @@ export type GSCSite = {
   permissionLevel: string;
 };
 
+const QUERYABLE_LEVELS = ["siteOwner", "siteFullUser"];
+
 async function refreshAccessToken(connection: GSCConnection): Promise<string> {
   if (!connection.refresh_token) throw new Error("No refresh token available");
 
@@ -80,7 +82,10 @@ export async function listSites(accessToken: string): Promise<GSCSite[]> {
     throw new Error(`Failed to fetch GSC sites: ${err?.error?.message ?? res.status}`);
   }
   const data = await res.json();
-  return data.siteEntry ?? [];
+  // Only return sites where the user can actually query the API
+  return (data.siteEntry ?? []).filter(
+    (s: GSCSite) => QUERYABLE_LEVELS.includes(s.permissionLevel)
+  );
 }
 
 async function fetchSearchAnalyticsForRange(

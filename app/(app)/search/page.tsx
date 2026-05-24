@@ -52,8 +52,8 @@ export default async function SearchPage() {
           <PageHeader title="Search" description="SEO analysis and keyword performance" agent="Guru" />
           <EmptyState
             icon={Search}
-            title="No sites found in Search Console"
-            description="Add and verify your website in Google Search Console, then come back here."
+            title="No accessible Search Console properties"
+            description="Your Google account doesn't have Full User or Owner access to any Search Console properties. Add your own website at search.google.com/search-console, or ask the property owner to grant you Full access."
           />
         </>
       );
