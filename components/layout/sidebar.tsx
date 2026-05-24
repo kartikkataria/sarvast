@@ -51,6 +51,15 @@ function AccountMenu({ user }: { user: User }) {
             <p className="text-xs font-medium text-foreground">{user.email}</p>
           </div>
           <div className="p-1">
+            <Link
+              href="/settings"
+              onClick={() => setOpen(false)}
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <Settings className="h-4 w-4" />
+              Settings
+            </Link>
+            <div className="my-1 border-t border-border" />
             <button
               onClick={signOut}
               className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
@@ -118,23 +127,9 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom — settings + account */}
-      <div className="border-t px-2 py-2 space-y-0.5" style={{ borderColor: "hsl(var(--sidebar-border))" }}>
-        <Link href="/settings"
-          className={cn(
-            "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
-            pathname.startsWith("/settings") ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:bg-white/60 hover:text-foreground"
-          )}
-        >
-          <Settings className={cn("h-4 w-4", pathname.startsWith("/settings") ? "text-primary" : "text-muted-foreground")} strokeWidth={1.75} />
-          <span className="font-medium">Settings</span>
-        </Link>
-
-        {user && (
-          <div className="px-1 pt-1">
-            <AccountMenu user={user} />
-          </div>
-        )}
+      {/* Bottom — account drawer */}
+      <div className="border-t px-2 py-2" style={{ borderColor: "hsl(var(--sidebar-border))" }}>
+        {user && <AccountMenu user={user} />}
       </div>
     </aside>
   );
