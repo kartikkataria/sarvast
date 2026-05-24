@@ -100,7 +100,11 @@ async function fetchSearchAnalyticsForRange(
     }
   );
 
-  if (!res.ok) throw new Error("Failed to fetch search analytics");
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    console.error("[GSC analytics] API error:", JSON.stringify(err));
+    throw new Error(`Failed to fetch search analytics: ${err?.error?.message ?? res.status}`);
+  }
   const data = await res.json();
 
   const rows: AnalyticsRow[] = (data.rows ?? []).map((r: SearchAnalyticsRow) => ({

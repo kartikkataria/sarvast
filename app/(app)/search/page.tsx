@@ -79,14 +79,20 @@ export default async function SearchPage() {
       </>
     );
   } catch (err) {
+    const msg = err instanceof Error ? err.message : "";
+    const isPermission = msg.includes("permission") || msg.includes("forbidden") || msg.includes("403");
     console.error("[search page]", err);
     return (
       <>
         <PageHeader title="Search" description="SEO analysis and keyword performance" agent="Guru" />
         <EmptyState
           icon={Search}
-          title="Failed to load search data"
-          description="There was an error fetching data from Google Search Console. Try refreshing the page."
+          title={isPermission ? "Insufficient permissions" : "Failed to load search data"}
+          description={
+            isPermission
+              ? "Your Google account has Restricted access to this Search Console property. Ask the property owner to upgrade your permission to Full User at search.google.com/search-console → Settings → Users and permissions."
+              : "There was an error fetching data from Google Search Console. Try refreshing the page."
+          }
         />
       </>
     );
