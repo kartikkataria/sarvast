@@ -14,11 +14,15 @@ export async function POST(request: Request) {
     const seed = Math.floor(Math.random() * 999999);
     const url = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${seed}&enhance=true`;
 
-    // Verify the image is reachable before returning
-    const check = await fetch(url, { method: "HEAD", signal: AbortSignal.timeout(30000) });
-    if (!check.ok) throw new Error("Image generation failed");
+    // Fetch the actual image bytes — Pollinations generates on GET, not HEAD
+    const res = await fetch(url, { signal: AbortSignal.timeout(60000) });
+    if (!res.ok) throw new Error(`Image service returned ${res.status}`);
 
-    return NextResponse.json({ url });
+    const buffer = await res.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString("base64");
+    const contentType = res.headers.get("content-type") ?? "image/jpeg";
+
+    return NextResponse.json({ url: `data:${contentType};base64,${base64}` });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Image generation failed";
     console.error("[generate-image]", message);
