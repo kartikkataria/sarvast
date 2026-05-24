@@ -2,17 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 import {
-  LayoutDashboard,
-  Search,
-  Share2,
-  Megaphone,
-  Star,
-  Swords,
-  CalendarDays,
-  Library,
-  Plug,
-  MessageSquare,
+  LayoutDashboard, Search, Share2, Megaphone, Star, Swords,
+  CalendarDays, Library, Plug, MessageSquare, Settings,
+  LogOut, ChevronUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,8 +25,63 @@ const navItems = [
   { label: "Connections", href: "/connections", icon: Plug },
 ];
 
+function AccountMenu({ user }: { user: User }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const initial = user.email?.charAt(0).toUpperCase() ?? "?";
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const signOut = async () => {
+    await createClient().auth.signOut();
+    window.location.href = "/auth/signin";
+  };
+
+  return (
+    <div ref={ref} className="relative">
+      {open && (
+        <div className="absolute bottom-full left-0 right-0 mb-1.5 overflow-hidden rounded-xl border border-border bg-white shadow-lg">
+          <div className="border-b border-border px-4 py-3">
+            <p className="text-xs font-medium text-foreground">{user.email}</p>
+          </div>
+          <div className="p-1">
+            <button
+              onClick={signOut}
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign out
+            </button>
+          </div>
+        </div>
+      )}
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 transition-colors hover:bg-accent"
+      >
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-semibold text-primary">
+          {initial}
+        </div>
+        <span className="flex-1 truncate text-left text-sm font-medium text-foreground">{user.email}</span>
+        <ChevronUp className={cn("h-3.5 w-3.5 text-muted-foreground transition-transform", !open && "rotate-180")} />
+      </button>
+    </div>
+  );
+}
+
 export function Sidebar() {
   const pathname = usePathname();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data }) => setUser(data.user));
+  }, []);
 
   return (
     <aside
@@ -50,34 +101,40 @@ export function Sidebar() {
           const Icon = item.icon;
           const active = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
-            <Link
-              key={item.href}
-              href={item.href}
+            <Link key={item.href} href={item.href}
               className={cn(
                 "group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
-                active
-                  ? "bg-white text-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-white/60 hover:text-foreground"
+                active ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:bg-white/60 hover:text-foreground"
               )}
             >
-              <Icon
-                className={cn("h-4 w-4 shrink-0 transition-colors", active ? "text-primary" : "text-muted-foreground group-hover:text-foreground")}
-                strokeWidth={active ? 2.25 : 1.75}
-              />
+              <Icon className={cn("h-4 w-4 shrink-0 transition-colors", active ? "text-primary" : "text-muted-foreground group-hover:text-foreground")}
+                strokeWidth={active ? 2.25 : 1.75} />
               <span className="flex-1 font-medium">{item.label}</span>
               {item.agent && (
-                <span className={cn("text-[10px]", active ? "text-muted-foreground" : "text-muted-foreground/50")}>
-                  {item.agent}
-                </span>
+                <span className={cn("text-[10px]", active ? "text-muted-foreground" : "text-muted-foreground/50")}>{item.agent}</span>
               )}
             </Link>
           );
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="border-t px-5 py-3" style={{ borderColor: "hsl(var(--sidebar-border))" }}>
-        <p className="text-[10px] text-muted-foreground/50">Sarvast · AI Marketing</p>
+      {/* Bottom — settings + account */}
+      <div className="border-t px-2 py-2 space-y-0.5" style={{ borderColor: "hsl(var(--sidebar-border))" }}>
+        <Link href="/settings"
+          className={cn(
+            "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
+            pathname.startsWith("/settings") ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:bg-white/60 hover:text-foreground"
+          )}
+        >
+          <Settings className={cn("h-4 w-4", pathname.startsWith("/settings") ? "text-primary" : "text-muted-foreground")} strokeWidth={1.75} />
+          <span className="font-medium">Settings</span>
+        </Link>
+
+        {user && (
+          <div className="px-1 pt-1">
+            <AccountMenu user={user} />
+          </div>
+        )}
       </div>
     </aside>
   );
