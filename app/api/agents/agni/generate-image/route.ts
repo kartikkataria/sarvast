@@ -1,8 +1,5 @@
-import OpenAI from "openai";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(request: Request) {
   const supabase = createClient();
@@ -13,26 +10,15 @@ export async function POST(request: Request) {
   if (!prompt) return NextResponse.json({ error: "Prompt required" }, { status: 400 });
 
   try {
-    const response = await openai.images.generate({
-      model: "gpt-image-1",
-      prompt,
-      n: 1,
-      size: "1024x1024",
-    });
+    const encoded = encodeURIComponent(prompt);
+    const seed = Math.floor(Math.random() * 999999);
+    const url = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${seed}&enhance=true`;
 
-    const image = response.data?.[0];
+    // Verify the image is reachable before returning
+    const check = await fetch(url, { method: "HEAD", signal: AbortSignal.timeout(30000) });
+    if (!check.ok) throw new Error("Image generation failed");
 
-    // gpt-image-1 returns base64
-    if (image?.b64_json) {
-      return NextResponse.json({ url: `data:image/png;base64,${image.b64_json}` });
-    }
-
-    // dall-e-* returns a URL
-    if (image?.url) {
-      return NextResponse.json({ url: image.url });
-    }
-
-    throw new Error("No image returned from API");
+    return NextResponse.json({ url });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Image generation failed";
     console.error("[generate-image]", message);
